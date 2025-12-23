@@ -1,0 +1,222 @@
+\documentclass[8pt,twocolumn]{extarticle}
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage[a4paper, margin=0.7cm]{geometry}
+
+% Macros
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\prob}{\mathbb{P}}
+\newcommand{\f}{\mathcal{F}}
+\newcommand{\norm}{\mathcal{N}}
+\newcommand{\n}{\mathbb{N}}
+
+\renewcommand{\labelitemi}{--}
+\setlength{\parindent}{0pt}
+
+\title{\Huge Modèle de Black--Scholes}
+\author{Maxence Caucheteux}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Résultats sur le modèle}
+\subsection*{Présentation du modèle}
+Ce modèle comprend \underline{un actif sans risque} $S^0_t = e^{rt}$ et \underline{un actif risqué} $S_t$.
+La dynamique de l'actif risqué est régie par l'EDS :
+$$dS_t = S_t (\mu dt + \sigma d B_t), \ \ S_0 = s_0$$
+avec $\mu \in \mathbb{R}, \sigma > 0$.
+
+\subsection*{Résolution de l'EDS}
+L'EDS admet une unique solution forte par théorème d'Itô et c'est :
+$$S_t = s_0 \exp \left( (\mu - \sigma^2/2)t + \sigma dB_t \right)$$
+
+\subsection*{Portefeuille ou stratégie}
+C'est un processus adapté $\phi = (H^0_t, H_t)_{t \in [0,T]}$. Sa valeur est $V_t (\phi) = H^0_t e^{rt} + H_t S_t$. 
+
+Portefeuille autofinancé si :
+\begin{itemize}
+    \item $\int_0^T (|H^0_t| + H^2_t) dt < + \infty \ \ \prob$-ps
+    \item $V_t (\phi) = V_0 + \int_0^t H^0_u dS^0_u + \int_0^t H_t dS_t$, équivalent à $d\tilde{V}_t(\phi) = H_t d\tilde{S}_t$
+\end{itemize}
+
+Stratégie admissible si :
+\begin{itemize}
+    \item autofinancée
+    \item $\tilde{V}_t(\phi) \geq 0$
+    \item $\E^* \left( \sup_{t \in [0,t]} \tilde{V}_t^2 \right) < + \infty$
+\end{itemize}
+
+\subsection*{Changement de probabilité}
+On pose, pour $t \in [0,T]$ :
+$$W_t = B_t + \frac{\mu-r}{\sigma}t, \ \ L_t = \exp \left(- \frac{\mu-r}{\sigma} B_t - \frac{1}{2} \left(\frac{\mu-r}{\sigma} \right)^2t \right)$$
+Par théorème de Girsanov appliqué à $\theta_s = (\mu-r)/\sigma$, sous $\prob^*$ de densité $\frac{d\prob^*}{d\prob} = L_T$, $(W_t)$ est un $(\f_t)$-mouvement brownien.
+
+\subsection*{Viabilité du marché}
+Le marché est viable dans le modèle de Black-Scholes i.e. pour tout $h \geq 0$ $\f_T$-mesurable de carré intégrable, il existe $\phi$ admissible simulant cette option. De plus, pour tout option $\phi$ simulant l'option $h$, on a :
+$$V_t = \E^* \left( e^{-r(T-t)} h \ \middle| \ \f_t \right)$$
+
+\subsection*{Pricing}
+\begin{table}[h!]
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{|c||c|c|}
+\hline
+ & Call & Put \\
+\hline\hline
+Prix $F(t,x)$
+& $x\,\norm\!\bigl(d_1(\theta,x)\bigr)
+   - K e^{-r\theta}\,\norm\!\bigl(d_2(\theta,x)\bigr)$
+& $K e^{-r\theta}\,\norm\!\bigl(-d_2(\theta,x)\bigr)
+   - x\,\norm\!\bigl(-d_1(\theta,x)\bigr)$ \\
+\hline
+Delta $\partial_x F(t,x)$
+& $\norm\!\bigl(d_1(\theta,x)\bigr)$
+& $-\norm\!\bigl(-d_1(\theta,x)\bigr)$ \\
+\hline
+\end{tabular}
+}
+\caption{Prix et delta}
+\end{table}
+
+Avec $\theta = T-t$ et :
+$$d_1 (\theta, x) = \frac{1}{\sigma \sqrt\theta} \left( \log \left( \frac{x}{K} \right) + \left( r + \frac{\sigma^2}{2}\right)\theta \right), \ \ \ d_2(\theta, x) = d_1 (\theta, x) - \sigma \sqrt{\theta}$$
+
+\subsection*{Parité Call-Put}
+Il faut retenir la relation de parité Call-Put :
+$$C_t - P_t = S_t -Ke^{-r(T-t)}$$
+
+\subsection*{Quelques relations utiles}
+$$S_t = s_0 \exp \left( \left( \mu - \frac{\sigma^2}{2} \right)t + \sigma B_t \right), \ \ S_t = s_0 \exp \left( \left( r - \frac{\sigma^2}{2} \right)t + \sigma W_t \right)$$ 
+$$dS_t = S_t (\mu dt + \sigma dB_t), \ \ dS_t = S_t (r dt + \sigma d W_t), \ \ d\tilde{S}_t = \sigma \tilde{S}_t dW_t$$
+
+\subsection*{Options américaines}
+Option américaine vanille : $h_t = \psi(S_t)$. La valeur de cette option $u(t,x)$ est donnée par 
+$$u(t,x) = \sup_{\tau \in \mathbb{T}_{t,T}} \E^* \left(e^{-r(\tau-t)} \psi \left( x\exp \left( (r-\sigma^2/2)(\tau - t) + \sigma (W_T-W_t) \right) \right) \right)$$
+
+\underline{Fait à savoir.} Le Call américain et le Call européen ont le même prix.
+
+\section{Résultats théoriques}
+\subsection*{Processus d'Itô}
+Un processus d'Itô est un processus de la forme
+$$X_t = X_0 + \int_0^t K_s ds + \int_0^t H_s dW_s$$
+avec 
+\begin{itemize}
+    \item $X_0$ $\mathcal{F}_0$-mesurable
+    \item $H$, $K$ adaptés à la filitration de $W$
+    \item $\int_0^T \left(|H_s| + K_s^2\right) ds < + \infty \ \ \prob$-ps 
+\end{itemize}
+Cette décomposition est unique. 
+
+\underline{Rappel.} 1. Si $\int_0^T H_s^2 ds < + \infty$ $\prob$-ps, alors le processus $\left( \int_0^t H_s dW_s\right)_{t \in [0,T]}$ est un processus $\mathcal{F}_t$-adapté et continu (c'est en fait une martingale locale).
+
+2. Si $\E \left( \int_0^T H_s^2 ds \right) < + \infty$, alors 
+le processus $\left( \int_0^t H_s dW_s\right)_{t \in [0,T]}$ est une $\mathcal{F}_t$-martingale continue. 
+
+
+\subsection*{Théorème de Girsanov}
+Soit $(\theta_t)_{t \in [0,T]}$ un processus adapté tel que $\int_0^T \theta_t^2 dt < +\infty$ $\prob$-ps et tel que 
+$$L_t = \exp \left( - \int_0^t \theta_s dB_s - \frac{1}{2} \int_0^t \theta_s^2 ds \right)$$
+est une $\mathcal{F}_t$-martingale. Alors sous $\mathbb{Q}$ de densité $\frac{d\mathbb{Q}}{d \prob} = L_T$, le processus
+$$W_t = B_t + \int_0^t \theta_s ds$$
+est un mouvement brownien.
+
+Le critère de la section suivante donne une condition suffisante pour que $L_t$ soit une martingale.
+
+\subsection*{Critère de Novikov}
+Si $\E \left( \exp{\left( \frac{1}{2}\int_0^T \theta_t^2 dt \right)} \right) < + \infty$, alors $L_t$ est une $\mathcal{F}_t$-martingale.
+
+\subsection*{EDP de Black-Scholes}
+$F(t,x)$ : prix de l'option européenne de payoff $h=f(S_T)$ à la maturité $T$. Elle vérifie l'EDP de Black-Scholes
+$$\partial_t F(t,x) + \frac{\sigma^2 x^2}{2}\partial_{xx} F(t,x) + rx \partial_x F(t,x) -rF(t,x)=0$$
+avec la condition terminale $F(T,x)=f(x)$.
+
+\subsection*{Isométrie d'Itô et inégalité de Doob}
+Si $\E \left( \int_0^T H_t^2 dt\right) < + \infty$, alors $\left( \int_0^t H_s dW_s\right)_{t \in [0,T]}$ est une $\mathcal{F}_t$-martingale vérifiant l'isométrie d'Itô
+$$\E \left( \left( \int_0^t H_s dW_s \right)^2 \right) = \E \left( \int_0^t H_s^2 ds\right)$$
+et l'inégalité de Doob
+$$\E \left( \sup_{s \in [0,T]} \left(\int_0^t H_s dW_s \right)^2\right) \leq  4 \E \left(\int_0^T H_s^2 ds \right)$$
+
+\subsection*{Théorème d'Itô}
+Soit $Z \in L^2(\prob)$. Si $b$ et $\sigma$ sont des fonctions continues et lipschitz en $x$ uniformément en $t$, alors l'EDS de diffusion
+$$dX_t = b(t, X_t) dt + \sigma(t, X_t) dW_t$$
+avec la condition initiale $X_0=Z$ admet une unique solution forte. De plus, il existe $C>0$ telle que 
+$$\E\left(\sup_{t \in [0,T]} |X_t|^2 \right) \leq C \E \left( Z^2 \right)$$
+
+\subsection*{Modèle avec dividendes}
+L'EDS du modèle est toujours la même, c'est-à-dire 
+$$dS_t = S_t(\mu dt + \sigma dB_t)$$
+Mais l'équation d'autofinancement s'écrit 
+$$dV_t = H_t^0 dS_t^0 + H_t dS_t + H_t \delta S_t dt.$$
+L'équation d'autofinancement s'écrit ainsi car dans l'intervalle $[t,t+dt]$, on touche $\delta S_t dt$ pour chaque action qu'on possède.
+
+Avec $\tilde{V}_t = e^{-rt} V_t$, on a 
+$$d \tilde{V}_t = \sigma H_t \tilde{S}_t dW_t^\delta \ \ \text{avec} \ \ W_t^\delta = B_t + \frac{\mu+\delta-r}{\sigma}t$$
+
+\underline{Prix du call} :
+$$F(t,x) = xe^{-\delta(T-t)} \norm (d_1(T-t,x)) - K e^{-r(T-t)}\norm (d_2(T-t,x))$$
+où
+$$d_1(\theta, x) = \frac{1}{\sigma \sqrt{\theta}} \left( \ln \left( \frac{x}{K} \right) + (r-\delta+\sigma^2/2) \theta \right), \ \ d_2 (\theta, x) = d_1(\theta, x) - \sigma \sqrt{\theta}$$
+
+\underline{Parité Call-Put} :
+$$C_t-P_t = S_t e^{-\delta(T-t)} - K e^{-r(T-t)}$$
+
+\underline{Portefeuille de couverture} :
+\[
+\begin{cases}
+H_t = e^{-\delta (T-t)} \norm\bigl(d_1(T-t,x)\bigr) & \text{(Call)} \\
+H_t = e^{-\delta (T-t)} \norm\bigl(d_1(T-t,x)\bigr) & \text{(Put)}
+\end{cases}
+\]
+
+\subsection{Les grecques}
+
+\begin{table}[h!]
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{|c||c|c|c|c|c|c|}
+\hline
+ & $S$ & $K$ & $\tau = T-t$ & $\sigma$ & $r$ & $\delta$ \\
+\hline\hline
+Prix Call européen
+& $\uparrow$
+& $\downarrow$
+& ?
+& $\uparrow$
+& $\uparrow$
+& $\downarrow$ \\
+\hline
+Prix Put européen
+& $\downarrow$
+& $\uparrow$
+& ?
+& $\uparrow$
+& $\downarrow$
+& $\uparrow$ \\
+\hline
+Prix Call américain
+& $\uparrow$
+& $\downarrow$
+& $\uparrow$
+& $\uparrow$
+& $\uparrow$
+& $\downarrow$ \\
+\hline
+Prix Put américain
+& $\downarrow$
+& $\uparrow$
+& $\uparrow$
+& $\uparrow$
+& $\downarrow$
+& $\uparrow$ \\
+\hline
+\end{tabular}
+}
+\caption{Sensibilité des prix aux paramètres (flèches de monotonie)}
+\end{table}
+
+\end{document}
+
