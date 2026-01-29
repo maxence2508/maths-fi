@@ -25,8 +25,8 @@ public:
 };
 
 double Matrix::operator()(int i, int j) const{
-        assert(0<=i && i<m && 0<=j && j<n);
-        return tab[i*n+j];
+    assert(0<=i && i<m && 0<=j && j<n);
+    return tab[i*n+j];
 }
 
 double& Matrix::operator()(int i, int j){
